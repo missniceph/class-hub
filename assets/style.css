@@ -71,7 +71,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scroll-padding-top: 4.5rem; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 8rem; /* room for the sticky top bar + section menu */ }
 body {
   margin: 0;
   background: var(--bg);
@@ -84,6 +84,7 @@ body {
 a { color: var(--accent); text-underline-offset: 2px; }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.topbar :focus-visible { outline-color: #fff; }
 h1, h2, h3 { font-family: var(--serif); line-height: 1.25; margin: 0; font-weight: 700; }
 code { font-size: .9em; background: var(--surface-2); padding: .1em .35em; border-radius: 4px; }
 .small { font-size: .875rem; }
@@ -208,7 +209,7 @@ code { font-size: .9em; background: var(--surface-2); padding: .1em .35em; borde
 .deadline.urgent { border-left-color: var(--red); }
 .deadline.soon { border-left-color: var(--amber); }
 .deadline.later { border-left-color: var(--green); }
-.deadline.past { opacity: .75; box-shadow: none; }
+.deadline.past { box-shadow: none; background: var(--surface-2); }
 .d-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; }
 .d-date { font-size: .9rem; color: var(--muted); font-weight: 600; }
 .d-date.tba { font-style: italic; font-weight: 400; }
@@ -227,8 +228,8 @@ code { font-size: .9em; background: var(--surface-2); padding: .1em .35em; borde
   padding: 12px 14px; min-height: 48px;
 }
 .week summary::-webkit-details-marker { display: none; }
-.week summary::after { content: "+"; grid-column: 3; grid-row: 1; font-size: 1.25rem; line-height: 1; color: var(--accent); }
-.week[open] summary::after { content: "–"; }
+.week summary::after { content: "+"; content: "+" / ""; grid-column: 3; grid-row: 1; font-size: 1.25rem; line-height: 1; color: var(--accent); }
+.week[open] summary::after { content: "–"; content: "–" / ""; }
 .week[open] summary { border-bottom: 1px solid var(--border); }
 .w-label { grid-column: 1; grid-row: 1; font-weight: 700; color: var(--accent); white-space: nowrap; }
 .w-dates { grid-column: 2; grid-row: 1; font-size: .85rem; color: var(--muted); }
@@ -243,7 +244,7 @@ code { font-size: .9em; background: var(--surface-2); padding: .1em .35em; borde
   -webkit-box-decoration-break: clone; box-decoration-break: clone;
 }
 
-.error h2 { font-size: 1.2rem; margin-bottom: .5rem; }
+.error h1 { font-size: 1.3rem; margin-bottom: .5rem; }
 .error { margin: 1.5rem 0; }
 
 /* ---------- Footer ---------- */
