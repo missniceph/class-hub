@@ -48,7 +48,9 @@
      Mini Markdown: just enough for a non-programmer's text file
      ================================================================ */
 
-  function inline(raw) {
+  // noLinks: used inside the home-page cards, which are already one big link
+  // (a link inside a link breaks the card).
+  function inline(raw, noLinks) {
     var tokens = [];
     function stash(html) { tokens.push(html); return '\u0000' + (tokens.length - 1) + '\u0000'; }
     var s = String(raw);
@@ -61,16 +63,18 @@
     s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (m, text, url) {
       var u = safeUrl(url);
       var label = esc(text);
-      if (!u) return stash(label);
+      if (!u || noLinks) return stash(label);
       var ext = /^https?:/i.test(u) ? ' target="_blank" rel="noopener noreferrer"' : '';
       return stash('<a href="' + esc(u) + '"' + ext + '>' + label + '</a>');
     });
     // bare web addresses
     s = s.replace(/\bhttps?:\/\/[^\s<>\u0000]*[^\s<>\u0000.,;:!?)\]'"]/gi, function (u) {
+      if (noLinks) return stash(esc(u.replace(/^https?:\/\//i, '')));
       return stash('<a href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + esc(u.replace(/^https?:\/\//i, '')) + '</a>');
     });
     // bare email addresses
     s = s.replace(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, function (e) {
+      if (noLinks) return stash(esc(e));
       return stash('<a href="mailto:' + esc(e) + '">' + esc(e) + '</a>');
     });
 
@@ -87,8 +91,8 @@
 
   function listItem(text) {
     // "Key: value" lines get a bold key, e.g. "Room: ..."
-    var m = /^([^:\[\]{}\u0000]{1,40}?):\s+(.+)$/.exec(text);
-    if (m && !/https?$/i.test(m[1])) {
+    var m = /^([A-Za-z\u00C0-\u024F][\w\u00C0-\u024F'’&\/-]*(?: [\w\u00C0-\u024F'’&\/-]+){0,4}):\s+(.+)$/.exec(text);
+    if (m && !/^https?$/i.test(m[1])) {
       return '<span class="k">' + inline(m[1]) + '</span> ' + inline(m[2]);
     }
     return inline(text);
@@ -237,6 +241,10 @@
     });
   }
 
+  function isoDate(p) {
+    return p.y + '-' + (p.mo < 10 ? '0' : '') + p.mo + '-' + (p.d < 10 ? '0' : '') + p.d;
+  }
+
   function fmtTime(p) {
     if (!p.hasTime) return '';
     if (p.h === 12 && p.mi === 0) return '12:00 NN';
@@ -335,7 +343,7 @@
     var now = phNow();
     return '<ol class="feed">' + list.map(function (a) {
       var when = a.date
-        ? '<time>' + esc(fmtDate(a.date)) + '</time>' + (agoText(a.date, now) ? ' · ' + agoText(a.date, now) : '')
+        ? '<time datetime="' + isoDate(a.date) + '">' + esc(fmtDate(a.date)) + '</time>' + (agoText(a.date, now) ? ' · ' + agoText(a.date, now) : '')
         : '<span class="ph">Undated — add a date like 2026-08-20</span>';
       return '<li class="card ann">' +
         '<p class="when">' + when + (a.isNew ? ' <span class="badge new">New</span>' : '') + '</p>' +
@@ -347,14 +355,19 @@
   function deadlineItem(d) {
     var dateHtml;
     if (d.date) {
-      dateHtml = '<span class="d-date">' + esc(fmtDate(d.date)) +
-        (d.date.hasTime ? ', ' + esc(fmtTime(d.date)) : '') + '</span>';
+      dateHtml = '<time class="d-date" datetime="' + isoDate(d.date) + '">' + esc(fmtDate(d.date)) +
+        (d.date.hasTime ? ', ' + esc(fmtTime(d.date)) : '') + '</time>';
     } else {
-      dateHtml = '<span class="d-date tba">' + (d.rawDate && !/^tba|^tbd/i.test(d.rawDate) ? inline(d.rawDate) : 'Date to be announced') + '</span>';
+      var raw = d.rawDate;
+      if (raw && /^\d/.test(raw)) {
+        dateHtml = '<span class="ph">Check this date: ' + esc(raw) + '</span>';
+      } else {
+        dateHtml = '<span class="d-date tba">' + (raw && !/^(tba|tbd)\b/i.test(raw) ? inline(raw) : 'Date to be announced') + '</span>';
+      }
     }
     var badge = d.status ? '<span class="badge ' + d.status.cls + '">' + esc(d.status.text) + '</span>' : '';
     return '<li class="deadline ' + (d.status ? d.status.cls : 'tba') + '">' +
-      '<div class="d-top">' + dateHtml + badge + '</div>' +
+      '<div class="d-top">' + dateHtml + ' ' + badge + '</div>' +
       '<p class="d-title">' + inline(d.title) + '</p>' +
       (d.details ? '<p class="d-details">' + inline(d.details) + '</p>' : '') + '</li>';
   }
@@ -383,8 +396,8 @@
       var body = hasContent(w.body) ? blocks(w.body) : '<p class="empty">Readings to follow.</p>';
       return '<details class="week"' + (i === 0 && sp.items.length === 1 ? ' open' : '') + '>' +
         '<summary><span class="w-label">' + inline(label) + '</span>' +
-        (dates ? '<span class="w-dates">' + inline(dates) + '</span>' : '') +
-        (topic ? '<span class="w-topic">' + inline(topic) + '</span>' : '') +
+        (dates ? ' <span class="w-dates">' + inline(dates) + '</span>' : '') +
+        (topic ? ' <span class="w-topic">' + inline(topic) + '</span>' : '') +
         '</summary><div class="prose">' + body + '</div></details>';
     }).join('') + '</div>';
     return html;
@@ -414,7 +427,7 @@
   }
 
   function errorBox(file) {
-    return '<div class="card error"><h2>Couldn\'t load this class</h2>' +
+    return '<div class="card error"><h1>Couldn\'t load this class</h1>' +
       '<p>Please check your connection and reload the page.</p>' +
       '<p class="small">Teacher\'s note: the site couldn\'t read <code>' + esc(file) + '</code>. ' +
       'If you opened the page straight from your computer, it needs to run on GitHub Pages ' +
@@ -455,17 +468,17 @@
         });
         var rows = '';
         if (latest) {
-          rows += '<li><span class="k">Latest</span><span>' + inline(latest.title) +
+          rows += '<li><span class="k">Latest</span> <span>' + inline(latest.title, true) +
             (latest.date ? ' <span class="muted">· ' + esc(fmtDate(latest.date)) + '</span>' : '') +
             (latest.isNew ? ' <span class="badge new">New</span>' : '') + '</span></li>';
         }
         if (next) {
-          rows += '<li><span class="k">Next due</span><span>' + inline(next.title) +
+          rows += '<li><span class="k">Next due</span> <span>' + inline(next.title, true) +
             (next.status ? ' <span class="badge ' + next.status.cls + '">' + esc(next.status.text) + '</span>' : ' <span class="muted">· date TBA</span>') + '</span></li>';
         }
-        el.innerHTML = '<p class="code">' + inline(t.code) + '</p>' +
-          '<h2>' + inline(t.title) + '</h2>' +
-          (summary ? '<p class="summary">' + inline(summary) + '</p>' : '') +
+        el.innerHTML = '<p class="code">' + inline(t.code, true) + '</p>' +
+          '<h2>' + (t.title ? inline(t.title, true) : esc(c.label)) + '</h2>' +
+          (summary ? '<p class="summary">' + inline(summary, true) + '</p>' : '') +
           (rows ? '<ul class="glance">' + rows + '</ul>' : '') +
           '<span class="go">Open class page <span aria-hidden="true">→</span></span>';
       }).catch(function () {
@@ -481,7 +494,7 @@
     var params = new URLSearchParams(location.search);
     var c = findClass(params.get('c'));
     if (!c) {
-      main.innerHTML = '<div class="card error"><h2>Class not found</h2><p>Choose a class:</p><ul>' +
+      main.innerHTML = '<div class="card error"><h1>Class not found</h1><p>Choose a class:</p><ul>' +
         CLASSES.map(function (k) { return '<li><a href="class.html?c=' + k.id + '">' + esc(k.label) + '</a></li>'; }).join('') +
         '</ul></div>';
       return;
@@ -499,7 +512,7 @@
 
       var used = {};
       var sections = doc.sections.map(function (s) {
-        var id = s.kind !== 'extra' && !used[s.kind] ? s.kind : slug(s.name);
+        var id = s.kind !== 'extra' && !used[s.kind] ? s.kind : 'sec-' + slug(s.name);
         while (used[id]) id += '-x';
         used[id] = 1;
         var body;
@@ -518,10 +531,11 @@
 
       main.innerHTML =
         '<header class="class-head">' +
-          '<p class="code">' + inline(t.code) + '</p>' +
-          '<h1>' + inline(t.title) + '</h1>' +
+          (t.title ? '<p class="code">' + inline(t.code) + '</p><h1>' + inline(t.title) + '</h1>'
+                   : '<h1>' + inline(t.code) + '</h1>') +
           (meta ? '<dl class="meta">' + meta + '</dl>' : '') +
         '</header>' + nav +
+        (sections.length ? '' : '<p class="empty block">Nothing has been posted for this class yet.</p>') +
         sections.map(function (s) {
           return '<section class="block" id="' + s.id + '" aria-labelledby="h-' + s.id + '">' +
             '<h2 id="h-' + s.id + '">' + inline(s.name) + '</h2>' + s.html + '</section>';
@@ -559,7 +573,7 @@
       if (mode === 'auto') document.documentElement.removeAttribute('data-theme');
       else document.documentElement.setAttribute('data-theme', mode);
       btn.textContent = labels[mode];
-      btn.setAttribute('aria-label', labels[mode] + '. Tap to change.');
+      btn.title = 'Switch between automatic, light and dark colors';
     }
     var mode = get();
     apply(mode);

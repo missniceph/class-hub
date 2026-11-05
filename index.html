@@ -3,11 +3,23 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Class Hub</title>
-  <meta name="description" content="Announcements, schedules, readings and deadlines for PA 106 and PA 152 at UP NCPAG.">
+  <title>Class Hub · PA 106 &amp; PA 152 · UP NCPAG</title>
+  <meta name="description" content="Announcements, schedules, readings and deadlines for PA 106 and PA 152 at UP NCPAG, all in one place.">
   <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" content="#7b1113">
+  <meta name="theme-color" content="#7b1113" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#3a1416" media="(prefers-color-scheme: dark)">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Class Hub">
+  <meta property="og:title" content="Class Hub · PA 106 &amp; PA 152 · UP NCPAG">
+  <meta property="og:description" content="Announcements, schedules, readings and deadlines for PA 106 and PA 152 at UP NCPAG, all in one place.">
+  <meta property="og:url" content="https://missniceph.github.io/class-hub/">
+  <meta property="og:image" content="https://missniceph.github.io/class-hub/assets/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Class Hub: announcements, deadlines and readings for PA 106 and PA 152 at UP NCPAG">
+  <meta name="twitter:card" content="summary_large_image">
   <script>try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
   <link rel="stylesheet" href="assets/style.css">
 </head>
@@ -25,7 +37,7 @@
       <h1>Your classes</h1>
       <p>Announcements, schedules, readings and deadlines in one place. Pick a class to see everything for it.</p>
     </section>
-    <div id="cards" class="cards"></div>
+    <div id="cards" class="cards" aria-live="polite"></div>
     <noscript>
       <div class="card">
         <p>This site needs JavaScript to display nicely. You can still read the class files directly:
@@ -37,6 +49,7 @@
   <footer class="footer wrap">
     <p>University of the Philippines National College of Public Administration and Governance</p>
     <p>No logins, no tracking. Times are Philippine time.</p>
+    <p><a href="https://www.instagram.com/missniceph/" rel="noopener noreferrer" target="_blank">Instagram: @missniceph</a></p>
   </footer>
   <script src="assets/app.js"></script>
 </body>

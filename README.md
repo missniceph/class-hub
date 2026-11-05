@@ -15,6 +15,22 @@ A simple website where students can check class information for **PA 106 (Citize
 
 ---
 
+## What's here and how to update it
+
+| What students see | Where it comes from | How to update it |
+|---|---|---|
+| Home page cards | Each class file's `## Class info` (title, summary), plus its latest announcement and next deadline | Edit the class file. The cards update on their own. |
+| Course details, schedule, readings, contact | `content/pa106.md` and `content/pa152.md` | Click the file, then the pencil icon, edit, and commit (steps below) |
+| Announcements | `## Announcements` in the class file | See [How to post an announcement](#how-to-post-an-announcement) |
+| Deadlines and "due in X days" | `## Deadlines` in the class file | See [How to add a deadline](#how-to-add-a-deadline) |
+| PDFs (syllabus, handouts) | the `files` folder | Add file → Upload files, then link to it |
+| Link preview on Facebook/Messenger | `assets/og-image.png` (drawn from `assets/og-image.svg`) | Usually never needs changing |
+| Tab icon | `assets/favicon.svg`, `assets/apple-touch-icon.png` | Usually never needs changing |
+
+Everything else (`index.html`, `class.html`, `assets/app.js`, `assets/style.css`) is the site's machinery. You don't need to touch it.
+
+---
+
 ## How to edit a class file on github.com
 
 1. Open the repository on github.com.
@@ -89,12 +105,12 @@ A deadline with no time is treated as due at the end of that day.
 
 **Course details at the top** (`## Class info`): one `Label: value` per line. You can add lines such as `Room: ...`. `Summary:` is the short sentence on the home page card.
 
-**Schedule and Contact:** these are ordinary bullet lists. Lines like `- Room: GT Toyota 201` show the part before the colon in bold.
+**Schedule and Contact:** these are ordinary bullet lists. Lines like `- Room: Room 101` show the part before the colon in bold.
 
 **Weekly topics and readings:** each week starts with a `###` line, and readings go underneath with dashes:
 
 ```
-### Week 3 | Sep 1–5 | Citizenship in the Philippine Constitution
+### Week 3 | DATES | TOPIC OF THE WEEK
 - [Author (Year). Title of the reading](https://link-to-the-reading)
 - Author (Year). A reading without a link
 ```
@@ -138,5 +154,6 @@ Plain HTML, CSS and JavaScript with no build step and no libraries.
 - `assets/app.js`: reads the text files and builds the pages. The class list is at the top of this file if you ever add a third class.
 - `assets/style.css`: design, including light and dark mode
 - `.nojekyll`: tells GitHub Pages to serve the `.md` files as plain text
+- `assets/og-image.png`: the 1200×630 share preview, rendered from `assets/og-image.svg`. The share tags in `index.html` and `class.html` point to `https://missniceph.github.io/class-hub/`. If the site ever moves to another address, update those `og:` lines.
 
 To preview on your own computer, run `python3 -m http.server` in this folder and open `http://localhost:8000`. Opening the HTML file directly won't load the content.
